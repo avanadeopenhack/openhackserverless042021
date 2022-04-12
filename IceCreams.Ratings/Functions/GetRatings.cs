@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -27,11 +28,11 @@ namespace IceCreams.Ratings.Functions
         [FunctionName("GetRatings")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "userId", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **User Id** parameter")]
+        [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The **User Id** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The ratings")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRatings/{userId:alpha}")] HttpRequest request,
-            string userId,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRatings/{userId:guid}")] HttpRequest request,
+            Guid userId,
             [CosmosDB(
                 databaseName: "IceCreamDb",
                 collectionName: "Ratings",
