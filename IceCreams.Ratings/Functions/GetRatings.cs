@@ -28,11 +28,11 @@ namespace IceCreams.Ratings.Functions
         [FunctionName("GetRatings")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **User Id** parameter")]
+        [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The **User Id** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The ratings")]
         public IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRatings/{userId}")] HttpRequest request,
-            string userId,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRatings/{userId:guid}")] HttpRequest request,
+            Guid userId,
             [CosmosDB(
                 databaseName: "IceCreamDb",
                 collectionName: "Ratings",
