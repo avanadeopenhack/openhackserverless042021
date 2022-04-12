@@ -264,3 +264,4 @@ __pycache__/
 *.pyc
 /.ionide
 /ode/Properties/PublishProfiles/odeopenhack042022 - Zip Deploy.pubxml
+/ode/src/Properties/PublishProfiles/odeopenhack042022 - Zip Deploy.pubxml

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ode.Function", "ode\ode.Function.csproj", "{B6006B34-FD45-477B-BA4B-B2F8E7C21BB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ode.Function", "ode\src\ode.Function.csproj", "{A915A922-CEFA-4727-9D1E-B8DD37C2A791}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B6006B34-FD45-477B-BA4B-B2F8E7C21BB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B6006B34-FD45-477B-BA4B-B2F8E7C21BB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B6006B34-FD45-477B-BA4B-B2F8E7C21BB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B6006B34-FD45-477B-BA4B-B2F8E7C21BB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A915A922-CEFA-4727-9D1E-B8DD37C2A791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A915A922-CEFA-4727-9D1E-B8DD37C2A791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A915A922-CEFA-4727-9D1E-B8DD37C2A791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A915A922-CEFA-4727-9D1E-B8DD37C2A791}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
