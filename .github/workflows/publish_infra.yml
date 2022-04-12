@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
 
 env:
     ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -13,6 +13,8 @@ env:
     ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     RESOURCE_GROUP_NAME : 'rg-challenge-2'
     STORAGE_ACCOUNT_NAME : 'stachallenge2'
+    FUNC_APP_NAME : 'nopasswordteam'
+    REGION : 'northeurope'
   
 # Ensures that only one deploy task per branch/environment will run at a time.
 concurrency:
@@ -20,7 +22,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: root
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v2
+
+ #   - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+ #     uses: actions/setup-dotnet@v1
+ #     with:
+ #       dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 'Resolve Project Dependencies Using Dotnet'
+      shell: bash
+      run: |
+        pushd './IceCreams.Ratings'
+        dotnet build --configuration Release --output '${{ github.workspace }}/output'
+        popd
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.3.1
+      with:
+      # Artifact name
+        name: IceCreams_Ratings
+        path: '${{ github.workspace }}/output'
+
   deploy_infra:
+    needs: build
+    environment: root
+    permissions:
+      id-token: write
+      packages: read
+      contents: read
     runs-on: ubuntu-20.04
     name: '🕹️ Deploy Infra'
     steps:
@@ -32,34 +66,27 @@ jobs:
           client-id: ${{ secrets.ARM_CLIENT_ID }}
           tenant-id: ${{ secrets.ARM_TENANT_ID }}
           subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  
-      - name: 'Run az commands'
-        run: |
-          az account show
-          az group list
-          
-          
+
        # Create Azure Resource Group
       - name: Create resource group
         run: |
-          if [ $(az group exists --name ${{ env.RESOURCE_GROUP_NAME }}) = false ]; then
-            az group create -n ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }}
-          else
-            echo "Resource Group ${{ env.RESOURCE_GROUP_NAME }} already exists or name not available"
-          fi
-        
-      # Create Azure Storage Account
-      - name: Create storage account
-        run: |
-          if [ $(az storage account check-name --name ${{ env.STORAGE_ACCOUNT_NAME }} --query "nameAvailable") = true ]; then
-            az storage account create -n ${{ env.STORAGE_ACCOUNT_NAME }} -g ${{ env.RESOURCE_GROUP_NAME }} -l northeurope \
-                                      --sku Standard_GRS --allow-blob-public-access false
-          else 
-            echo "Storage Account ${{ env.STORAGE_ACCOUNT_NAME }} already exists or name not available"
-          fi
-          
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+          az group create -n ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }}
+          az storage account create -n ${{ env.STORAGE_ACCOUNT_NAME }} -g ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false
+          az functionapp create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --name ${{ env.FUNC_APP_NAME }} --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]'
+          az functionapp cors add -g ${{ env.RESOURCE_GROUP_NAME }} -n ${{ env.FUNC_APP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "ProductBaseUrl=https://serverlessohapi.azurewebsites.net/api/"
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "UserBaseUrl=https://serverlessohapi.azurewebsites.net/api/"
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "CosmosDBConnection=${{ secrets.COSMOSDB_CS }}"
 
+      - name: Download the artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: IceCreams_Ratings
+          path: '${{ github.workspace }}/output'
+
+      - name: "Run Azure Functions Action"
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNC_APP_NAME }}
+          package: '${{ github.workspace }}/output'
 
