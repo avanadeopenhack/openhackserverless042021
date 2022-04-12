@@ -263,3 +263,4 @@ paket-files/
 __pycache__/
 *.pyc
 /.ionide
+/ode/Properties/PublishProfiles/odeopenhack042022 - Zip Deploy.pubxml
