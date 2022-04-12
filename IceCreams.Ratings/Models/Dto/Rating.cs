@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace IceCreams.Ratings.Infra.Dto
+namespace IceCreams.Ratings.Models.Dto
 {
     public class Rating
     {

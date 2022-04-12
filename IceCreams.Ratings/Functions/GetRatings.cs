@@ -1,5 +1,6 @@
-using IceCreams.Ratings.Infra.Dto;
 using IceCreams.Ratings.Managers;
+using IceCreams.Ratings.Models;
+using IceCreams.Ratings.Models.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -9,10 +10,9 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace IceCreams.Ratings.Functions
 {
@@ -28,9 +28,9 @@ namespace IceCreams.Ratings.Functions
         [FunctionName("GetRatings")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "userId", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **User Id** parameter")]
+        [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **User Id** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The ratings")]
-        public async Task<IActionResult> Run(
+        public IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRatings/{userId}")] HttpRequest request,
             string userId,
             [CosmosDB(
@@ -41,11 +41,11 @@ namespace IceCreams.Ratings.Functions
                 IEnumerable<Rating> ratings,
             ILogger log)
         {
-            log.LogInformation("Get the ratings from the Cosmos DB database.");
-            // TODO conversion
+            log.LogInformation($"Get the ratings from the Cosmos DB database for the user {userId}.");
 
-            string responseMessage = JsonConvert.SerializeObject(ratings);
+            IEnumerable<RatingModel> ratingModelCollection = _ratingManager.ConvertRatingCollectionToModel(ratings);
 
+            string responseMessage = JsonConvert.SerializeObject(ratingModelCollection.ToList());
             return new OkObjectResult(responseMessage);
         }
     }

@@ -50,7 +50,6 @@ namespace IceCreams.Ratings.Functions
             return new OkResult();
         }
 
-
         private async Task<RatingModel> GetModelAsync(HttpRequest req)
         {
             RatingModel ratingModel = null;

@@ -1,9 +1,10 @@
-﻿using IceCreams.Ratings.Models;
+﻿using IceCreams.Ratings.Models.Dto;
+using IceCreams.Ratings.Models;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace IceCreams.Ratings.Managers
 {
@@ -11,6 +12,7 @@ namespace IceCreams.Ratings.Managers
     {
         private readonly IConfiguration _configuration;
         private readonly string _baseUrl;
+
         public RatingManager(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -45,7 +47,7 @@ namespace IceCreams.Ratings.Managers
         {
             try
             {
-                HttpClient client = new HttpClient();
+                using HttpClient client = new HttpClient();
                 var response = await client.GetAsync(url);
 
                 var model = await response.Content.ReadAsAsync<T>();
@@ -54,6 +56,48 @@ namespace IceCreams.Ratings.Managers
             catch { }
 
             return default(T);
+        }
+
+        public IEnumerable<RatingModel> ConvertRatingCollectionToModel(IEnumerable<Rating> ratingCollection)
+        {
+            foreach (Rating rating in ratingCollection)
+            {
+                yield return ConvertRatingToModel(rating);
+            }
+        }
+
+        public RatingModel ConvertRatingToModel(Rating rating)
+        {
+            return new RatingModel
+            {
+                RatingId = Guid.Parse(rating.Id),
+                UserId = Guid.Parse(rating.UserId),
+                ProductId = Guid.Parse(rating.ProductId),
+                LocationName = rating.LocationName,
+                Rating = rating.RatingScore,
+                UserNotes = rating.UserNotes
+            };
+        }
+
+        public IEnumerable<Rating> ConvertRatingCollectionToDto(IEnumerable<RatingModel> ratingCollection)
+        {
+            foreach (RatingModel rating in ratingCollection)
+            {
+                yield return ConvertRatingToDto(rating);
+            }
+        }
+
+        public Rating ConvertRatingToDto(RatingModel rating)
+        {
+            return new Rating
+            {
+                Id = rating.RatingId.ToString("D"),
+                UserId = rating.UserId.ToString("D"),
+                ProductId = rating.ProductId.ToString("D"),
+                LocationName = rating.LocationName,
+                RatingScore = rating.Rating,
+                UserNotes = rating.UserNotes
+            };
         }
     }
 }
