@@ -24,8 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
     name: '🕹️ Deploy Infra'
     steps:
-    
-    steps:
+
       # Login to Azure
       - name: Azure login
         uses: azure/login@v1
