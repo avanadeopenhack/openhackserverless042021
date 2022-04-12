@@ -14,11 +14,11 @@ namespace ode.Function
     {
         [FunctionName(nameof(GetHttpTrigger))]
         public static async Task<IActionResult> GetHttpTrigger(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "products/{id:int?}")] HttpRequest req, int? id,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "products/{id:guid}")] HttpRequest req, Guid? id,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-            int cleanId = 0;
+            Guid cleanId = Guid.Empty;
             var found = true;
             if (id != null)
             {
@@ -28,7 +28,7 @@ namespace ode.Function
             {
                 if (req.Query.ContainsKey("id"))
                 {
-                    found = int.TryParse(req.Query["id"][0], out cleanId);
+                    found = Guid.TryParse(req.Query["id"][0], out cleanId);
                 }
                 else
                 {
