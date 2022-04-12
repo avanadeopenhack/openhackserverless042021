@@ -1,7 +1,5 @@
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
 using IceCreams.Ratings.Managers;
+using IceCreams.Ratings.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -11,12 +9,17 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace IceCreams.Ratings.Functions
 {
     public class CreateRating
     {
-        public IRatingManager _ratingManager { get; }
+
+        public readonly IRatingManager _ratingManager;
 
         public CreateRating(IRatingManager ratingManager)
         {
@@ -27,24 +30,36 @@ namespace IceCreams.Ratings.Functions
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "name", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **Name** parameter")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "The OK response")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string name = req.Query["name"];
+            var model = await GetModelAsync(req);
+            try
+            {
+                await _ratingManager.CreateAsync(model);
+            }
+            catch (ArgumentException e)
+            {
+                return new BadRequestObjectResult(e.Message);
+            }
 
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
+            return new OkResult();
+        }
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
 
-            return new OkObjectResult(responseMessage);
+        private async Task<RatingModel> GetModelAsync(HttpRequest req)
+        {
+            RatingModel ratingModel = null;
+            using (StreamReader streamReader = new StreamReader(req.Body))
+            {
+                var requestBody = await streamReader.ReadToEndAsync();
+                ratingModel = JsonConvert.DeserializeObject<RatingModel>(requestBody);
+            }
+            return ratingModel;
         }
     }
 }
