@@ -20,7 +20,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v2
+
+ #   - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+ #     uses: actions/setup-dotnet@v1
+ #     with:
+ #       dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 'Resolve Project Dependencies Using Dotnet'
+      shell: bash
+      run: |
+        pushd './IceCreams.Ratings'
+        dotnet build --configuration Release --output '${{ github.workspace }}/output'
+        popd
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.3.1
+      with:
+      # Artifact name
+        name: IceCreams_Ratings
+        path: '${{ github.workspace }}/output'
+
   deploy_infra:
+    needs: build
+    permissions:
+      id-token: write
+      packages: read
+      contents: read
     runs-on: ubuntu-20.04
     name: '🕹️ Deploy Infra'
     steps:
@@ -57,9 +87,15 @@ jobs:
           else 
             echo "Storage Account ${{ env.STORAGE_ACCOUNT_NAME }} already exists or name not available"
           fi
-          
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
 
+      # - name: 'Deploy Function App'
+      #   uses: azure/CLI@v1
+      #   with:
+      #   inlineScript: |
+      #       az deployment group create \
+      #       --name az-func-workflow-deploy \
+      #       --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
+      #       --template-file $GITHUB_WORKSPACE/src/GreetingDemo.AzArmTemplates/GreetingFunction/template.json \
+      #       --mode incremental \
+      #       --parameters $GITHUB_WORKSPACE/src/GreetingDemo.AzArmTemplates/GreetingFunction/parameters.json \
 
