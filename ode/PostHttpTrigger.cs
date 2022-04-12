@@ -14,7 +14,7 @@ namespace ode.Function
     {
         [FunctionName(nameof(GetHttpTrigger))]
         public static async Task<IActionResult> GetHttpTrigger(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "products/{id:guid}")] HttpRequest req, Guid? id,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "products/{id:guid?}")] HttpRequest req, Guid? id,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
