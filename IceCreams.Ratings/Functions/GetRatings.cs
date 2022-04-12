@@ -42,10 +42,6 @@ namespace IceCreams.Ratings.Functions
             ILogger log)
         {
             log.LogInformation("Get the ratings from the Cosmos DB database.");
-
-            // 
-
-            // TODO gestion des userId (paramètre)
             // TODO conversion
 
             string responseMessage = JsonConvert.SerializeObject(ratings);
