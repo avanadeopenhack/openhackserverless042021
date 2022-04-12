@@ -21,6 +21,10 @@ concurrency:
 
 jobs:
   deploy_infra:
+    permissions:
+      id-token: write
+      packages: read
+      contents: read
     runs-on: ubuntu-20.04
     name: '🕹️ Deploy Infra'
     steps:
