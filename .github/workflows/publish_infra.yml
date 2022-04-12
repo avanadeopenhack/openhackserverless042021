@@ -53,6 +53,7 @@ jobs:
       contents: read
     runs-on: ubuntu-20.04
     name: '🕹️ Deploy Infra'
+    environment: root
     steps:
 
       # Login to Azure
