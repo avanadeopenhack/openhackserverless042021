@@ -5,6 +5,9 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace IceCreams.Ratings.Managers
 {
@@ -19,13 +22,25 @@ namespace IceCreams.Ratings.Managers
             _baseUrl = configuration.GetValue<string>("BaseUrl");
         }
 
+        public async Task<RatingModel> ExtractModelFromHttpRequestAsync(HttpRequest request)
+        {
+            RatingModel ratingModel;
+            using StreamReader streamReader = new StreamReader(request.Body);
+
+            string requestBody = await streamReader.ReadToEndAsync();
+
+            ratingModel = JsonConvert.DeserializeObject<RatingModel>(requestBody);
+
+            return ratingModel;
+        }
+
         public async Task CreateAsync(RatingModel model)
         {
-            var getUserUrl = $"{ _baseUrl}/GetUser?userId={model.UserId}";
-            var getProductUrl = $"{ _baseUrl}/GetProduct?productId={model.ProductId}";
+            string getUserUrl = $"{ _baseUrl}/GetUser?userId={model.UserId}";
+            string getProductUrl = $"{ _baseUrl}/GetProduct?productId={model.ProductId}";
 
-            var user = await GetAsync<UserModel>(getUserUrl);
-            var product = await GetAsync<ProductModel>(getProductUrl);
+            UserModel user = await GetAsync<UserModel>(getUserUrl);
+            ProductModel product = await GetAsync<ProductModel>(getProductUrl);
 
             if (model.Rating > 5 || model.Rating < 0)
             {
