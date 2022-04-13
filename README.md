@@ -26,7 +26,7 @@ Three products:
 |UserReadAPI|GetUsers|/user|/id|GET|X|-|-|
 |ProductReadAPI|GetProduct|/product|/id|GET|X|X|X|
 |ProductReadAPI|GetProducts|/product|/|GET|X|X|X|
-|RatingWriteAPI|CreateRating|/rating|/|POST|X|-|-|
+|RatingWriteAPI|CreateRating|/write/rating|/|POST|X|-|-|
 |RatingReadAPI|GetRating|/rating|/id|GET|X|X|-|
 |RatingReadAPI|GetRatings|/rating|/userId|GET|X|X|-|
 | |
