@@ -47,27 +47,6 @@ namespace IceCreams.Ratings.Managers
         {
             await _container.CreateItemAsync(entity, new PartitionKey(partitionKey));
         }
-
-        /// <summary>
-        /// Add Family items to the container
-        /// </summary>
-        public async Task AddItemsToContainerAsync(Rating item)
-        {
-            try
-            {
-                // Read the item to see if it exists.  
-                ItemResponse<Rating> itemResponse = await this._container.ReadItemAsync<Rating>(item.Id, new PartitionKey(item.UserId));
-                //Console.WriteLine("Item in database with id: {0} already exists\n", andersenFamilyResponse.Resource.Id);
-            }
-            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                // Create an item in the container representing the Andersen family. Note we provide the value of the partition key for this item, which is "Andersen"
-                ItemResponse<Rating> itemResponse = await this._container.CreateItemAsync<Rating>(item, new PartitionKey(item.UserId));
-
-                // Note that after creating the item, we can access the body of the item with the Resource property off the ItemResponse. We can also access the RequestCharge property to see the amount of RUs consumed on this request.
-                Console.WriteLine("Created item in database with id: {0} Operation consumed {1} RUs.\n", itemResponse.Resource.Id, itemResponse.RequestCharge);
-            }
-        }
     }
 
 }
