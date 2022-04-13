@@ -79,7 +79,7 @@ jobs:
           az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "CosmosDBConnection=${{ secrets.COSMOSDB_CS }}"
 
           scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id)
-          principalId=$(az webapp identity show -n '${{ env.FUNC_APP_NAME }}' -g '${{ env.RESOURCE_GROUP_NAME }}' --query principalId)
+          principalId=$(az functionapp identity show -n '${{ env.FUNC_APP_NAME }}' -g '${{ env.RESOURCE_GROUP_NAME }}' --query principalId)
           az role assignment create --assignee $principalId --role "DocumentDB Account Contributor" --scope $scope
 
       - name: Download the artifact
