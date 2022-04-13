@@ -9,7 +9,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +29,7 @@ namespace IceCreams.Ratings.Functions
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The **User Id** parameter")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The ratings")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(IEnumerable<RatingModel>), Description = "The ratings")]
         public IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRatings/{userId:guid}")] HttpRequest request,
             Guid userId,
@@ -48,8 +47,7 @@ namespace IceCreams.Ratings.Functions
             {
                 IEnumerable<RatingModel> ratingModelCollection = _ratingManager.ConvertRatingCollectionToModel(ratings);
 
-                string responseMessage = JsonConvert.SerializeObject(ratingModelCollection.ToList());
-                return new OkObjectResult(responseMessage);
+                return new OkObjectResult(ratingModelCollection);
             }
 
             return new NotFoundResult();
