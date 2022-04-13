@@ -44,10 +44,15 @@ namespace IceCreams.Ratings.Functions
         {
             log.LogInformation($"Get the ratings from the Cosmos DB database for the user {userId}.");
 
-            IEnumerable<RatingModel> ratingModelCollection = _ratingManager.ConvertRatingCollectionToModel(ratings);
+            if (ratings.Any())
+            {
+                IEnumerable<RatingModel> ratingModelCollection = _ratingManager.ConvertRatingCollectionToModel(ratings);
 
-            string responseMessage = JsonConvert.SerializeObject(ratingModelCollection.ToList());
-            return new OkObjectResult(responseMessage);
+                string responseMessage = JsonConvert.SerializeObject(ratingModelCollection.ToList());
+                return new OkObjectResult(responseMessage);
+            }
+
+            return new NotFoundResult();
         }
     }
 }
