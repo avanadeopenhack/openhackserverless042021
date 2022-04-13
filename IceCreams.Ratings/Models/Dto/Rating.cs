@@ -8,6 +8,9 @@ namespace IceCreams.Ratings.Models.Dto
         [JsonProperty("id")]
         public string Id { get; set; }
 
+        //[JsonProperty("partitionKey")]
+        //public string PartitionKey => Id;
+
         [JsonProperty("userId")]
         public string UserId { get; set; }
 

@@ -1,12 +1,13 @@
 ﻿using IceCreams.Ratings.Models;
+using IceCreams.Ratings.Models.Dto;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using System.IO;
-using Newtonsoft.Json;
 
 namespace IceCreams.Ratings.Managers
 {
@@ -56,18 +57,18 @@ namespace IceCreams.Ratings.Managers
                 throw new ArgumentException($"Product {model.ProductId} does not exist");
             }
 
-            var ratingItem = new Rating
-            {
-                ProductId = model.ProductId.ToString(),
-                UserId = model.UserId.ToString(),
-                UserNotes = model.UserNotes,
-                RatingScore = model.Rating,
-                Id = Guid.NewGuid().ToString(),
-                LocationName = "Sample ice cream shop"
+            var ratingItem = ConvertRatingToDto(model, true); //new Rating
+            //{
+            //    ProductId = model.ProductId.ToString(),
+            //    UserId = model.UserId.ToString(),
+            //    UserNotes = model.UserNotes,
+            //    RatingScore = model.Rating,
+            //    Id = Guid.NewGuid().ToString(),
+            //    LocationName = "Sample ice cream shop"
 
-            };
+            //};
             var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Ratings");
-            await cosmosClientProvider.InsertAsync(ratingItem, "/id");
+            await cosmosClientProvider.InsertAsync(ratingItem, ratingItem.Id);
 
 
             await Task.CompletedTask;
@@ -113,15 +114,15 @@ namespace IceCreams.Ratings.Managers
         {
             foreach (RatingModel rating in ratingCollection)
             {
-                yield return ConvertRatingToDto(rating);
+                yield return ConvertRatingToDto(rating, false);
             }
         }
 
-        public Rating ConvertRatingToDto(RatingModel rating)
+        public Rating ConvertRatingToDto(RatingModel rating, bool forceNewId)
         {
             return new Rating
             {
-                Id = rating.RatingId.ToString("D"),
+                Id = (forceNewId ? Guid.NewGuid() : rating.RatingId).ToString("D"),
                 UserId = rating.UserId.ToString("D"),
                 ProductId = rating.ProductId.ToString("D"),
                 LocationName = rating.LocationName,

@@ -1,11 +1,7 @@
-﻿using IceCreams.Ratings.Infra.Dto;
+﻿using IceCreams.Ratings.Models.Dto;
 using Microsoft.Azure.Cosmos;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace IceCreams.Ratings.Managers
@@ -35,7 +31,7 @@ namespace IceCreams.Ratings.Managers
         public async Task<T> RetrieveEntityAsync<T>(string id, string partitionKey)
         {
             var item = await _container.ReadItemAsync<T>(id, new PartitionKey(partitionKey));
-            if(item != null)
+            if (item != null)
             {
                 return item.Resource;
             }
@@ -49,16 +45,7 @@ namespace IceCreams.Ratings.Managers
 
         public async Task InsertAsync<T>(T entity, string partitionKey)
         {
-            //await _container.CreateItemAsync(entity, new PartitionKey(partitionKey));
-            try
-            {
-                //var item = await _container.ReadItemAsync<T>("648df6db-6786-4418-b370-01cb1c5f7625", new PartitionKey(partitionKey));
-                var result = _container.CreateItemAsync(entity, new PartitionKey(partitionKey)).Result;
-            }
-            catch(Exception ex)
-            {
-
-            }
+            await _container.CreateItemAsync(entity, new PartitionKey(partitionKey));
         }
 
         /// <summary>
