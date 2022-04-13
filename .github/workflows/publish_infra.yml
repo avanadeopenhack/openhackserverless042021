@@ -7,15 +7,8 @@ on:
     # branches:
     #   - main
 
-env:
-    ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-    ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-    ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-    RESOURCE_GROUP_NAME : 'rg-challenge-2'
-    STORAGE_ACCOUNT_NAME : 'stachallenge2'
-    FUNC_APP_NAME : 'nopasswordteam'
-    REGION : 'northeurope'
-  
+
+
 # Ensures that only one deploy task per branch/environment will run at a time.
 concurrency:
   group: environment-${{ github.ref }}
@@ -24,7 +17,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: root
     name: '🏭 Build'
     steps:
     - name: 'Checkout GitHub Action'
@@ -51,7 +43,17 @@ jobs:
 
   deploy_infra:
     needs: build
-    environment: root
+    environment:
+      name: root
+      url: ${{ steps.iac.outputs.function_uri }}
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      RESOURCE_GROUP_NAME : 'ohnopasswordteamrg'
+      STORAGE_ACCOUNT_NAME : 'ohnopasswordteamsa'
+      FUNC_APP_NAME : 'ohnopasswordteamfunc'
+      REGION : 'northeurope'
     permissions:
       id-token: write
       packages: read
@@ -70,6 +72,7 @@ jobs:
 
        # Create Azure Resource Group
       - name: '🏗️ Create infra'
+        id: iac
         run: |
           az group create --name ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }} --output none
 
@@ -90,11 +93,14 @@ jobs:
           az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "resourceGroupName=IceCreamRatings" --output none
           az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "subscriptionId=${{ secrets.ARM_SUBSCRIPTION_ID }}" --output none
 
-          # role="DocumentDB Account Contributor"
-          # scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id) --output none
-          # principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId) --output nonew
-          # echo "Assigning $principalId the role $role on $scope"
-          # az role assignment create --assignee $principalId --role "$role" --scope $scope
+          host=$(az functionapp show -n 'nopasswordteam' -g 'rg-challenge-2' --query defaultHostName --out tsv)
+
+          role="DocumentDB Account Contributor"
+          scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id) --output none
+          principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId) --output none
+          az role assignment create --assignee-object-id $principalId --assignee-principal-type "ServicePrincipal" --role "$role" --scope $scope
+
+          echo "::set-output name=function_uri::https://$host"
 
       - name: Download the artifact
         uses: actions/download-artifact@v3
