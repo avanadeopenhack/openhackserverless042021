@@ -1,5 +1,7 @@
 # openhackserverless042021
 
+[![⭐Publish Infra](https://github.com/avanadeopenhack/openhackserverless042021/actions/workflows/publish_infra.yml/badge.svg?branch=main)](https://github.com/avanadeopenhack/openhackserverless042021/actions/workflows/publish_infra.yml)
+
 ## Challenge 4 System telemetry and API Management
 
 ### Telemetry
