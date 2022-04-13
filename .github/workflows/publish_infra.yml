@@ -76,11 +76,11 @@ jobs:
         run: |
           az group create --name ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }} --output none
 
-          az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false
-          az functionapp create --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]'
-          az functionapp cors add --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net
-          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "BaseUrl=https://serverlessohapi.azurewebsites.net/api/"
-          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "CosmosDBConnection=${{ secrets.COSMOSDB_CS_REF }}"
+          az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false --output none
+          az functionapp create --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]' --output none
+          az functionapp cors add --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net --output none
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "BaseUrl=https://serverlessohapi.azurewebsites.net/api/" --output none
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "CosmosDBConnection=${{ secrets.COSMOSDB_CS_REF }}" --output none
 
           az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false --output none
 
@@ -98,6 +98,7 @@ jobs:
           role="DocumentDB Account Contributor"
           scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id)
           principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId)
+          echo "granting role to function"
           az role assignment create --assignee-object-id $principalId --assignee-principal-type "ServicePrincipal" --role "$role" --scope $scope
 
           echo "::set-output name=function_uri::https://$host"
