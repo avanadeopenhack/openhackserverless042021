@@ -4,15 +4,7 @@
 
 ### Telemetry
 
-The number of times each function was run in the past hour:
-``` kusto
-requests
-| where timestamp > ago(1h) and operation_Name contains "Rating"
-| summarize totalCount=sum(itemCount) by operation_Name
-| render table
-```
-
-The average duration of each function in that hour
+The number of times each function was run in the past hour and the average duration of each function in that hour
 ``` kusto
 requests
 | where timestamp > ago(1h) and operation_Name contains "Rating"
@@ -20,11 +12,3 @@ requests
 | render table
 ```
 
-
-The average duration of each function in that hour
-``` kusto
-requests
-| where timestamp > ago(1h) and operation_Name contains "Rating"
-| summarize totalCount=sum(itemCount), avgDuration = avg(duration) by operation_Name
-| render table
-```
