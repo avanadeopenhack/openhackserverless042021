@@ -98,8 +98,8 @@ jobs:
           role="DocumentDB Account Contributor"
           scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id)
           principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId)
-          echo "granting role to function"
-          az role assignment create --assignee-object-id $principalId --assignee-principal-type "ServicePrincipal" --role "$role" --scope $scope
+          echo "granting role $role to function $principalId on scope $scope"
+          az role assignment create --assignee-object-id "$principalId" --assignee-principal-type "ServicePrincipal" --role "$role" --scope "$scope"
 
           echo "::set-output name=function_uri::https://$host"
 
