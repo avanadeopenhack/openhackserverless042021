@@ -1,8 +1,6 @@
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
 using IceCreams.Ratings.Managers;
 using IceCreams.Ratings.Models;
+using IceCreams.Ratings.Models.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -12,6 +10,10 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace IceCreams.Ratings.Functions
 {
@@ -27,24 +29,24 @@ namespace IceCreams.Ratings.Functions
         [FunctionName("GetRating")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "name", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **Name** parameter")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "The OK response")]
+        [OpenApiParameter(name: "ratingId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **Rating Id** parameter")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The matching rating")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, RatingModel model,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetRating/{ratingId}")] HttpRequest request,
+            string ratingId,
+            [CosmosDB(
+                databaseName: "IceCreamDb",
+                collectionName: "Ratings",
+                ConnectionStringSetting = "CosmosDBConnection",
+                SqlQuery = "SELECT * FROM c WHERE c.id = {ratingId} ORDER BY c._ts DESC")]
+                IEnumerable<Rating> ratings,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-            
-            string name = req.Query["name"];
+            log.LogInformation($"Get the rating {ratingId} from the Cosmos DB database.");
 
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
+            RatingModel ratingModel = _ratingManager.ConvertRatingToModel(ratings.First());
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
-
+            string responseMessage = JsonConvert.SerializeObject(ratingModel);
             return new OkObjectResult(responseMessage);
         }
     }

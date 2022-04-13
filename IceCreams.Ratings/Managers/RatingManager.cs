@@ -1,10 +1,12 @@
-﻿using IceCreams.Ratings.Infra.Dto;
-using IceCreams.Ratings.Models;
+﻿using IceCreams.Ratings.Models;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace IceCreams.Ratings.Managers
 {
@@ -21,13 +23,25 @@ namespace IceCreams.Ratings.Managers
             _cosmosDbConnectionString = configuration.GetValue<string>("CosmosDBConnection");
         }
 
+        public async Task<RatingModel> ExtractModelFromHttpRequestAsync(HttpRequest request)
+        {
+            RatingModel ratingModel;
+            using StreamReader streamReader = new StreamReader(request.Body);
+
+            string requestBody = await streamReader.ReadToEndAsync();
+
+            ratingModel = JsonConvert.DeserializeObject<RatingModel>(requestBody);
+
+            return ratingModel;
+        }
+
         public async Task CreateAsync(RatingModel model)
         {
-            var getUserUrl = $"{ _baseUrl}/GetUser?userId={model.UserId}";
-            var getProductUrl = $"{ _baseUrl}/GetProduct?productId={model.ProductId}";
+            string getUserUrl = $"{ _baseUrl}/GetUser?userId={model.UserId}";
+            string getProductUrl = $"{ _baseUrl}/GetProduct?productId={model.ProductId}";
 
-            var user = await GetAsync<UserModel>(getUserUrl);
-            var product = await GetAsync<ProductModel>(getProductUrl);
+            UserModel user = await GetAsync<UserModel>(getUserUrl);
+            ProductModel product = await GetAsync<ProductModel>(getProductUrl);
 
             if (model.Rating > 5 || model.Rating < 0)
             {
@@ -63,7 +77,7 @@ namespace IceCreams.Ratings.Managers
         {
             try
             {
-                HttpClient client = new HttpClient();
+                using HttpClient client = new HttpClient();
                 var response = await client.GetAsync(url);
 
                 var model = await response.Content.ReadAsAsync<T>();
@@ -72,6 +86,48 @@ namespace IceCreams.Ratings.Managers
             catch { }
 
             return default(T);
+        }
+
+        public IEnumerable<RatingModel> ConvertRatingCollectionToModel(IEnumerable<Rating> ratingCollection)
+        {
+            foreach (Rating rating in ratingCollection)
+            {
+                yield return ConvertRatingToModel(rating);
+            }
+        }
+
+        public RatingModel ConvertRatingToModel(Rating rating)
+        {
+            return new RatingModel
+            {
+                RatingId = Guid.Parse(rating.Id),
+                UserId = Guid.Parse(rating.UserId),
+                ProductId = Guid.Parse(rating.ProductId),
+                LocationName = rating.LocationName,
+                Rating = rating.RatingScore,
+                UserNotes = rating.UserNotes
+            };
+        }
+
+        public IEnumerable<Rating> ConvertRatingCollectionToDto(IEnumerable<RatingModel> ratingCollection)
+        {
+            foreach (RatingModel rating in ratingCollection)
+            {
+                yield return ConvertRatingToDto(rating);
+            }
+        }
+
+        public Rating ConvertRatingToDto(RatingModel rating)
+        {
+            return new Rating
+            {
+                Id = rating.RatingId.ToString("D"),
+                UserId = rating.UserId.ToString("D"),
+                ProductId = rating.ProductId.ToString("D"),
+                LocationName = rating.LocationName,
+                RatingScore = rating.Rating,
+                UserNotes = rating.UserNotes
+            };
         }
     }
 }
