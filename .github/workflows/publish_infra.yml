@@ -96,8 +96,8 @@ jobs:
           host=$(az functionapp show -n 'nopasswordteam' -g 'rg-challenge-2' --query defaultHostName --out tsv)
 
           role="DocumentDB Account Contributor"
-          scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id) --output none
-          principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId) --output none
+          scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id)
+          principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId)
           az role assignment create --assignee-object-id $principalId --assignee-principal-type "ServicePrincipal" --role "$role" --scope $scope
 
           echo "::set-output name=function_uri::https://$host"
