@@ -12,3 +12,25 @@ requests
 | render table
 ```
 
+### APIM
+
+Three products:
+- Mobile
+- Internal
+- External
+
+|API|Operations\Products|Mobile|Internal|External|
+|---|---|---|---|---|
+|-|GetUsers|-|-|-|
+|UserReadAPI|GetUsers|X|-|-|
+|ProductReadAPI|GetProduct|X|X|X|
+|ProductReadAPI|GetProducts|X|X|X|
+|RatingWriteAPI|CreateRating|X|-|-|
+|RatingReadAPI|GetRating|X|X|-|
+|RatingReadAPI|GetRatings|X|X|-|
+| | | | | |
+|Policies|
+|10 calls per 60 seconds| |-|X|-|
+|15 calls per 60 seconds| |-|-|X|
+
+
