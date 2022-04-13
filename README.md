@@ -19,19 +19,20 @@ Three products:
 - Internal
 - External
 
-|API|Operations|Path|Method|Mobile|Internal|External|
-|---|---|---|---|---|---|
-|-|GetUsers|-|-|-|-|
-|UserReadAPI|GetUsers|/id||X|-|-|
-|ProductReadAPI|GetProduct|/id|X|X|X|
-|ProductReadAPI|GetProducts|X|X|X|
-|RatingWriteAPI|CreateRating|X|-|-|
-|RatingReadAPI|GetRating|X|X|-|
-|RatingReadAPI|GetRatings|X|X|-|
-| | | | | |
+
+|API|Operations|Base URL|Path|Method|Mobile|Internal|External|
+|---|---|---|---|---|---|---|---|
+|-|GetUsers|-|-|GET|-|-|-|
+|UserReadAPI|GetUsers|/user|/id|GET|X|-|-|
+|ProductReadAPI|GetProduct|/product|/id|GET|X|X|X|
+|ProductReadAPI|GetProducts|/product|/|GET|X|X|X|
+|RatingWriteAPI|CreateRating|/rating|/|POST|X|-|-|
+|RatingReadAPI|GetRating|/rating|/id|GET|X|X|-|
+|RatingReadAPI|GetRatings|/rating|/userId|GET|X|X|-|
+| |
 |Policies|
-|10 calls per 60 seconds| |-|X|-|
-|15 calls per 60 seconds| |-|-|X|
+|10 calls per 60 seconds|||||-|X|-|
+|15 calls per 60 seconds|||||-|-|X|
 
 
 
