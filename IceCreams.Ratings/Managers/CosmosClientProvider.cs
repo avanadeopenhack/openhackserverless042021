@@ -1,6 +1,8 @@
 ﻿using IceCreams.Ratings.Models.Dto;
 using Microsoft.Azure.Cosmos;
 using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -38,10 +40,22 @@ namespace IceCreams.Ratings.Managers
             return default;
         }
 
-        //public async Task<IQueryable<T>> QueryEntitiesAsync<T>(Expression<Func<T, bool>> predicate, string partitionKey)
-        //{
-        //    var requst
-        //}
+        public async Task<IQueryable<T>> QueryEntitiesAsync<T>(Expression<Func<T, bool>> predicate)
+        {
+            IQueryable<T> query = _container.GetItemLinqQueryable<T>(true)
+                .Where(predicate);
+
+            return await Task.FromResult(query);
+        }
+
+        public async Task<IQueryable<T>> QueryEntitiesAsync<T>(Expression<Func<T, bool>> predicate, string partitionKey)
+        {
+            var requestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+            IQueryable<T> query = _container.GetItemLinqQueryable<T>(true, requestOptions: requestOptions)
+                .Where(predicate);
+
+            return await Task.FromResult(query);
+        }
 
         public async Task InsertAsync<T>(T entity, string partitionKey)
         {
