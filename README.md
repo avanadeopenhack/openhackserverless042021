@@ -28,7 +28,7 @@ Three products:
 |ProductReadAPI|GetProducts|/product|/|GET|X|X|X|
 |RatingWriteAPI|CreateRating|/write/rating|/|POST|X|-|-|
 |RatingReadAPI|GetRating|/rating|/id|GET|X|X|-|
-|RatingReadAPI|GetRatings|/rating|/userId|GET|X|X|-|
+|RatingReadAPI|GetRatings|/rating/user|/Id|GET|X|X|-|
 | |
 |Policies|
 |10 calls per 60 seconds|||||-|X|-|
