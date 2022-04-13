@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
 
 env:
     ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -13,6 +13,8 @@ env:
     ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     RESOURCE_GROUP_NAME : 'rg-challenge-2'
     STORAGE_ACCOUNT_NAME : 'stachallenge2'
+    FUNC_APP_NAME : 'nopasswordteam'
+    REGION : 'northeurope'
   
 # Ensures that only one deploy task per branch/environment will run at a time.
 concurrency:
@@ -22,6 +24,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: root
+    name: '🏭 Build'
     steps:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@v2
@@ -47,6 +51,7 @@ jobs:
 
   deploy_infra:
     needs: build
+    environment: root
     permissions:
       id-token: write
       packages: read
@@ -63,40 +68,44 @@ jobs:
           client-id: ${{ secrets.ARM_CLIENT_ID }}
           tenant-id: ${{ secrets.ARM_TENANT_ID }}
           subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  
-      - name: 'Run az commands'
-        run: |
-          az account show
-          az group list
-          
-          
-       # Create Azure Resource Group
-      - name: Create resource group
-        run: |
-          if [ $(az group exists --name ${{ env.RESOURCE_GROUP_NAME }}) = false ]; then
-            az group create -n ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }}
-          else
-            echo "Resource Group ${{ env.RESOURCE_GROUP_NAME }} already exists or name not available"
-          fi
-        
-      # Create Azure Storage Account
-      - name: Create storage account
-        run: |
-          if [ $(az storage account check-name --name ${{ env.STORAGE_ACCOUNT_NAME }} --query "nameAvailable") = true ]; then
-            az storage account create -n ${{ env.STORAGE_ACCOUNT_NAME }} -g ${{ env.RESOURCE_GROUP_NAME }} -l northeurope \
-                                      --sku Standard_GRS --allow-blob-public-access false
-          else 
-            echo "Storage Account ${{ env.STORAGE_ACCOUNT_NAME }} already exists or name not available"
-          fi
 
-      # - name: 'Deploy Function App'
-      #   uses: azure/CLI@v1
-      #   with:
-      #   inlineScript: |
-      #       az deployment group create \
-      #       --name az-func-workflow-deploy \
-      #       --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
-      #       --template-file $GITHUB_WORKSPACE/src/GreetingDemo.AzArmTemplates/GreetingFunction/template.json \
-      #       --mode incremental \
-      #       --parameters $GITHUB_WORKSPACE/src/GreetingDemo.AzArmTemplates/GreetingFunction/parameters.json \
+       # Create Azure Resource Group
+      - name: '🏗️ Create infra'
+        run: |
+          az group create --name ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }} --output none
+
+          az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false
+          az functionapp create --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]'
+          az functionapp cors add --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "BaseUrl=https://serverlessohapi.azurewebsites.net/api/"
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "CosmosDBConnection=${{ secrets.COSMOSDB_CS_REF }}"
+
+          az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false --output none
+
+          az functionapp create --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]' --output none
+          az functionapp cors add --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net --output none
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "BaseUrl=https://serverlessohapi.azurewebsites.net/api/" --output none
+          az functionapp config appsettings delete --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --setting-names "CosmosDBConnection" --output none
+
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "cosmosDbAccount=ohs2204-icecreamratings-cosmossqlapi" --output none
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "resourceGroupName=IceCreamRatings" --output none
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "subscriptionId=${{ secrets.ARM_SUBSCRIPTION_ID }}" --output none
+
+          # role="DocumentDB Account Contributor"
+          # scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id) --output none
+          # principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId) --output nonew
+          # echo "Assigning $principalId the role $role on $scope"
+          # az role assignment create --assignee $principalId --role "$role" --scope $scope
+
+      - name: Download the artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: IceCreams_Ratings
+          path: '${{ github.workspace }}/output'
+
+      - name: Deploy function
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNC_APP_NAME }}
+          package: '${{ github.workspace }}/output'
 
