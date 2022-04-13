@@ -74,8 +74,7 @@ jobs:
           az storage account create -n ${{ env.STORAGE_ACCOUNT_NAME }} -g ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false
           az functionapp create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --name ${{ env.FUNC_APP_NAME }} --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]'
           az functionapp cors add -g ${{ env.RESOURCE_GROUP_NAME }} -n ${{ env.FUNC_APP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net
-          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "ProductBaseUrl=https://serverlessohapi.azurewebsites.net/api/"
-          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "UserBaseUrl=https://serverlessohapi.azurewebsites.net/api/"
+          az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "BaseUrl=https://serverlessohapi.azurewebsites.net/api/"
           az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "CosmosDBConnection=${{ secrets.COSMOSDB_CS }}"
 
           # scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id)
