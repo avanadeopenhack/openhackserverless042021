@@ -50,9 +50,9 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      RESOURCE_GROUP_NAME : 'ohnopasswordteamrg'
-      STORAGE_ACCOUNT_NAME : 'ohnopasswordteamsa'
-      FUNC_APP_NAME : 'ohnopasswordteamfunc'
+      RESOURCE_GROUP_NAME : 'rg-challenge-2'
+      STORAGE_ACCOUNT_NAME : 'stachallenge2'
+      FUNC_APP_NAME : 'nopasswordteam'
       REGION : 'northeurope'
     permissions:
       id-token: write
@@ -99,7 +99,7 @@ jobs:
           scope=$(az cosmosdb show --name 'ohs2204-icecreamratings-cosmossqlapi' --resource-group 'IceCreamRatings' --query id)
           principalId=$(az functionapp identity show --name '${{ env.FUNC_APP_NAME }}' --resource-group '${{ env.RESOURCE_GROUP_NAME }}' --query principalId)
           echo "granting role $role to function $principalId on scope $scope"
-          az role assignment create --assignee-object-id "$principalId" --assignee-principal-type "ServicePrincipal" --role "$role" --scope "$scope" --subscription "${{ secrets.ARM_SUBSCRIPTION_ID }}" --verbose
+          # az role assignment create --assignee-object-id "$principalId" --assignee-principal-type "ServicePrincipal" --role "$role" --scope "$scope" --subscription "${{ secrets.ARM_SUBSCRIPTION_ID }}" --verbose
 
           echo "::set-output name=function_uri::https://$host"
 
