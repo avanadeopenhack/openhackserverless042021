@@ -32,7 +32,7 @@ namespace IceCreams.Ratings
                 .AddEnvironmentVariables();
 
             var config = builder.ConfigurationBuilder.Build();
-            if (string.IsNullOrEmpty(config["cosmosDBAccount"]))
+            if (!string.IsNullOrEmpty(config["cosmosDBAccount"]))
             {
                 builder.ConfigurationBuilder
                     .AddInMemoryCollection(GetCosmosDb(builder.ConfigurationBuilder.Build()).Result)
