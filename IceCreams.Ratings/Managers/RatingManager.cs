@@ -1,4 +1,5 @@
-﻿using IceCreams.Ratings.Models;
+﻿using IceCreams.Ratings.Infra.Dto;
+using IceCreams.Ratings.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,13 @@ namespace IceCreams.Ratings.Managers
     {
         private readonly IConfiguration _configuration;
         private readonly string _baseUrl;
+        private readonly string _cosmosDbConnectionString;
+
         public RatingManager(IConfiguration configuration)
         {
             _configuration = configuration;
             _baseUrl = configuration.GetValue<string>("BaseUrl");
+            _cosmosDbConnectionString = configuration.GetValue<string>("CosmosDBConnection");
         }
 
         public async Task CreateAsync(RatingModel model)
@@ -37,6 +41,20 @@ namespace IceCreams.Ratings.Managers
             {
                 throw new ArgumentException($"Product {model.ProductId} does not exist");
             }
+
+            var ratingItem = new Rating
+            {
+                ProductId = model.ProductId.ToString(),
+                UserId = model.UserId.ToString(),
+                UserNotes = model.UserNotes,
+                RatingScore = model.Rating,
+                Id = Guid.NewGuid().ToString(),
+                LocationName = "Sample ice cream shop"
+
+            };
+            var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Ratings");
+            await cosmosClientProvider.InsertAsync(ratingItem, "/id");
+
 
             await Task.CompletedTask;
         }
