@@ -31,30 +31,34 @@ namespace IceCream.Ordering
 
             var dataContent = JsonConvert.DeserializeObject<GridData>(JsonConvert.SerializeObject(input.Data));
 
-            log.LogInformation($"{dataContent.url}");
-
             if (!currentValue.ContainsKey(prefix))
             {
                 currentValue.Add(prefix, new FileTriplet());
             }
+            var triplet = currentValue[prefix];
 
-            if (currentValue[prefix].Add(type, dataContent.url) == 3)
+            triplet.Add(type, dataContent.url);
+            if (triplet.IsFull())
             {
                 // invoke remote url
 
 
                 using var httpCli = new HttpClient();
+                
 #pragma warning disable S1075 // URIs should not be hardcoded
                 var uri = "https://serverlessohmanagementapi.trafficmanager.net/api/order/combineOrderContent";
 #pragma warning restore S1075 // URIs should not be hardcoded
 
-                log.LogInformation(JsonConvert.SerializeObject(currentValue[prefix]));
+                log.LogInformation(JsonConvert.SerializeObject(triplet));
 
-                httpCli.DefaultRequestHeaders.Add("ContentType", "application/json");
-                httpCli.DefaultRequestHeaders.Add("Accept", "application/json");
-                var rep = await httpCli.PostAsJsonAsync(uri, currentValue[prefix]);
+                log.LogWarning($"Pushing for key {prefix}");
+                // var rep = await httpCli.PostAsJsonAsync("", triplet);
+                var rep = await httpCli.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(triplet), System.Text.Encoding.UTF8, "application/json"));
 
-                log.LogInformation($"HTTP Code : {rep.StatusCode} for {prefix}");
+                log.LogWarning($"HTTP Code : {rep.StatusCode} for {prefix}");
+                log.LogError($"{await rep.Content.ReadAsStringAsync()}");
+
+
 
                 currentValue.Remove(prefix);
             }
@@ -65,12 +69,7 @@ namespace IceCream.Ordering
         [FunctionName(nameof(NewFileReceived))]
         public static async Task NewFileReceived([EventGridTrigger] EventGridEvent eventGridEvent, [DurableClient] IDurableEntityClient entityClient, ILogger log)
         {
-            var body = JsonConvert.SerializeObject(eventGridEvent);
-            log.LogInformation(body);
-
-            // string instanceId = await starter.StartNewAsync(nameof(Counter), eventGridEvent);
             await entityClient.SignalEntityAsync(new EntityId(nameof(Counter), "key"), eventGridEvent.EventType, eventGridEvent);
-
         }
     }
 }

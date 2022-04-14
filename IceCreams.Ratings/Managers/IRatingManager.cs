@@ -19,5 +19,7 @@ namespace IceCreams.Ratings.Managers
         IEnumerable<Rating> ConvertRatingCollectionToDto(IEnumerable<RatingModel> ratingCollection);
 
         Rating ConvertRatingToDto(RatingModel rating, bool forceNewId);
+
+        Task SaveOrderAsync(string content, string key);
     }
 }

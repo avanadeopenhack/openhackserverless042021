@@ -130,5 +130,10 @@ namespace IceCreams.Ratings.Managers
                 UserNotes = rating.UserNotes
             };
         }
+
+        public async Task SaveOrderAsync(string content, string key)
+        {
+
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,8 +7,7 @@ namespace IceCream.Ordering
 {
     public class FileTriplet
     {
-        public int Count = 0;
-        public int Add(string type, string fileUrl)
+        public void Add(string type, string fileUrl)
         {
             switch (type)
             {
@@ -22,8 +22,11 @@ namespace IceCream.Ordering
                     break;
 
             }
-            Count++;
-            return Count;
+        }
+
+        public bool IsFull()
+        {
+            return !string.IsNullOrEmpty(productInformationCSVUrl) && !string.IsNullOrEmpty(orderHeaderDetailsCSVUrl) && !string.IsNullOrEmpty(orderLineItemsCSVUrl);
         }
 
         public string orderHeaderDetailsCSVUrl { get; set; }
