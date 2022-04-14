@@ -134,7 +134,10 @@ namespace IceCreams.Ratings.Managers
         public async Task SaveOrderAsync(IEnumerable<Order> orders, string key)
         {
             var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Orders");
-            await cosmosClientProvider.InsertAsync(orders, key);
+            foreach (var order in orders)
+            {
+                await cosmosClientProvider.InsertAsync(orders, order.headers.salesNumber);
+            }
         }
     }
 }
