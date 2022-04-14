@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 using IceCreams.Ratings.Managers;
 using IceCreams.Ratings.Models;
 using Microsoft.AspNetCore.Http;
@@ -8,38 +13,37 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Net;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace IceCreams.Ratings.Functions
 {
-    public class CreateRating
+    public class SaveOrder
     {
-        private readonly IRatingManager _ratingManager;
+        public IRatingManager _ratingManager { get; }
 
-        public CreateRating(IRatingManager ratingManager)
+        public SaveOrder(IRatingManager ratingManager)
         {
-            _ratingManager = ratingManager;
+            this._ratingManager = ratingManager;
         }
 
-        [FunctionName("CreateRating")]
+        [FunctionName("SaveOrder")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiRequestBody("application/json", typeof(RatingModel), Description = "The **rating** to create", Required = true)]
+        [OpenApiParameter(name: "name", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **Name** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            RatingModel model = await _ratingManager.ExtractModelFromHttpRequestAsync<RatingModel>(request);
+            IList<Order> model = await _ratingManager.ExtractModelFromHttpRequestAsync<List<Order>>(req);
+            var key = req.Query["key"];
             try
             {
-                await _ratingManager.CreateAsync(model);
+                await _ratingManager.SaveOrderAsync(model, key);
             }
-            catch (ArgumentException e)
+            catch (Exception e)
             {
                 return new BadRequestObjectResult(e.Message);
             }
