@@ -136,7 +136,8 @@ namespace IceCreams.Ratings.Managers
             var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Orders");
             foreach (var order in orders)
             {
-                await cosmosClientProvider.InsertAsync(orders, order.headers.salesNumber);
+                order.key = order.headers.salesNumber;
+                await cosmosClientProvider.InsertAsync(order, order.headers.salesNumber);
             }
         }
     }

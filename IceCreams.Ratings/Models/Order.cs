@@ -29,6 +29,7 @@ namespace IceCreams.Ratings.Models
 
     public class Order
     {
+        public string key { get; set; }
         public Headers headers { get; set; }
         public List<Detail> details { get; set; }
     }
