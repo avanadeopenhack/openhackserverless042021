@@ -54,11 +54,14 @@ namespace IceCream.Ordering
                 log.LogWarning($"Pushing for key {prefix}");
                 // var rep = await httpCli.PostAsJsonAsync("", triplet);
                 var rep = await httpCli.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(triplet), System.Text.Encoding.UTF8, "application/json"));
-
+                var content = await rep.Content.ReadAsStringAsync();
                 log.LogWarning($"HTTP Code : {rep.StatusCode} for {prefix}");
-                log.LogError($"{await rep.Content.ReadAsStringAsync()}");
+                log.LogError($"{content}");
 
-
+                string? funcSaveUrl = Environment.GetEnvironmentVariable("functionUrl");
+                log.LogInformation($"Function URL : {funcSaveUrl}");
+                rep = await httpCli.PostAsync(funcSaveUrl, new StringContent(content, System.Text.Encoding.UTF8, "application/json"));
+                log.LogError($"{content}");
 
                 currentValue.Remove(prefix);
             }
