@@ -52,6 +52,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       RESOURCE_GROUP_NAME : 'rg-challenge-2'
       STORAGE_ACCOUNT_NAME : 'stachallenge2'
+      STORAGE_ACCOUNT_NAME_C6 : 'stachallenge6'
       FUNC_APP_NAME : 'nopasswordteam'
       REGION : 'northeurope'
     permissions:
@@ -77,6 +78,11 @@ jobs:
           az group create --name ${{ env.RESOURCE_GROUP_NAME }} -l westeurope --subscription ${{ env.ARM_SUBSCRIPTION_ID }} --output none
 
           az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_GRS --allow-blob-public-access false --output none
+
+          az storage account create --name ${{ env.STORAGE_ACCOUNT_NAME_C6 }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} -l ${{ env.REGION }} --sku Standard_LRS --allow-blob-public-access false --output none
+
+          az storage container create --name team01 --account-name ${{ env.STORAGE_ACCOUNT_NAME_C6 }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --auth-mode login --public-access off
+
           az functionapp create --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --consumption-plan-location ${{ env.REGION }} --runtime dotnet --functions-version 3 --storage-account ${{ env.STORAGE_ACCOUNT_NAME }} --assign-identity '[system]' --output none
           az functionapp cors add --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --allowed-origins  https://softserverless-rating.trafficmanager.net --output none
           az functionapp config appsettings set --name ${{ env.FUNC_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings "BaseUrl=https://serverlessohapi.azurewebsites.net/api/" --output none
