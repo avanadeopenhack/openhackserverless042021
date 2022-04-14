@@ -60,7 +60,7 @@ namespace IceCream.Ordering
 
                 string? funcSaveUrl = Environment.GetEnvironmentVariable("functionUrl");
                 log.LogInformation($"Function URL : {funcSaveUrl}");
-                rep = await httpCli.PostAsync(funcSaveUrl, new StringContent(content, System.Text.Encoding.UTF8, "application/json"));
+                rep = await httpCli.PostAsync($"{funcSaveUrl}&key={prefix}", new StringContent(content, System.Text.Encoding.UTF8, "application/json"));
                 log.LogError($"{content}");
 
                 currentValue.Remove(prefix);
