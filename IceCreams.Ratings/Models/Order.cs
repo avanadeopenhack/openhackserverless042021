@@ -14,6 +14,7 @@ namespace IceCreams.Ratings.Models
         public string locationPostcode { get; set; }
         public string totalCost { get; set; }
         public string totalTax { get; set; }
+        public string receiptUrl { get; set; }
     }
 
     public class Detail
