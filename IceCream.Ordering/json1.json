@@ -1,0 +1,21 @@
+{
+  "id": "dd5ff4a7-701e-006c-33d7-4f00d206011f",
+  "topic": "/subscriptions/8d1ce9a8-175e-4ee3-bb6b-29d40c054b57/resourceGroups/rg-challenge-2/providers/Microsoft.Storage/storageAccounts/stachallenge6",
+  "subject": "/blobServices/default/containers/team01/blobs/20220414081400-OrderLineItems.csv",
+  "data": {
+    "api": "PutBlob",
+    "clientRequestId": "81d2508c-2e4f-49a0-aec9-dde033f406e8",
+    "requestId": "dd5ff4a7-701e-006c-33d7-4f00d2000000",
+    "eTag": "0x8DA1DEEBD92E96B",
+    "contentType": "application/octet-stream",
+    "contentLength": 954,
+    "blobType": "BlockBlob",
+    "url": "https://stachallenge6.blob.core.windows.net/team01/20220414081400-OrderLineItems.csv",
+    "sequencer": "0000000000000000000000000001BE3300000000018e818f",
+    "storageDiagnostics": { "batchId": "2da6b374-8006-0014-00d7-4f6865000000" }
+  },
+  "eventType": "Microsoft.Storage.BlobCreated",
+  "eventTime": "2022-04-14T08:14:04.6300299Z",
+  "metadataVersion": "1",
+  "dataVersion": ""
+}
