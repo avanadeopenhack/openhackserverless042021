@@ -131,7 +131,7 @@ namespace IceCreams.Ratings.Managers
             };
         }
 
-        public async Task SaveOrderAsync(IEnumerable<Order> orders, string key)
+        public async Task SaveOrdersAsync(IEnumerable<Order> orders, string key)
         {
             var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Orders");
             foreach (var order in orders)
@@ -140,6 +140,14 @@ namespace IceCreams.Ratings.Managers
                 order.key = order.headers.salesNumber;
                 await cosmosClientProvider.InsertAsync(order, order.headers.salesNumber);
             }
+        }
+
+        public async Task SaveOrderAsync(OrderBis order)
+        {
+            var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Orders");
+            order.id = Guid.NewGuid().ToString();
+            order.key = order.header.salesNumber;
+            await cosmosClientProvider.InsertAsync(order, order.header.salesNumber);
         }
     }
 }

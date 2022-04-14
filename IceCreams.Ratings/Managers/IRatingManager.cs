@@ -20,6 +20,7 @@ namespace IceCreams.Ratings.Managers
 
         Rating ConvertRatingToDto(RatingModel rating, bool forceNewId);
 
-        Task SaveOrderAsync(IEnumerable<Order> content, string key);
+        Task SaveOrdersAsync(IEnumerable<Order> content, string key);
+        Task SaveOrderAsync(OrderBis order);
     }
 }

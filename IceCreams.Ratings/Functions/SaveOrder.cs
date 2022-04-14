@@ -41,7 +41,7 @@ namespace IceCreams.Ratings.Functions
             var key = req.Query["key"];
             try
             {
-                await _ratingManager.SaveOrderAsync(model, key);
+                await _ratingManager.SaveOrdersAsync(model, key);
             }
             catch (Exception e)
             {
