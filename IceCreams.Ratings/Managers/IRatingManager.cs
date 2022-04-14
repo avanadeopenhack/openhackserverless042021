@@ -8,7 +8,7 @@ namespace IceCreams.Ratings.Managers
 {
     public interface IRatingManager
     {
-        Task<RatingModel> ExtractModelFromHttpRequestAsync(HttpRequest request);
+        Task<T> ExtractModelFromHttpRequestAsync<T>(HttpRequest request);
 
         Task CreateAsync(RatingModel model);
 
@@ -20,6 +20,6 @@ namespace IceCreams.Ratings.Managers
 
         Rating ConvertRatingToDto(RatingModel rating, bool forceNewId);
 
-        Task SaveOrderAsync(string content, string key);
+        Task SaveOrderAsync(IEnumerable<Order> content, string key);
     }
 }
