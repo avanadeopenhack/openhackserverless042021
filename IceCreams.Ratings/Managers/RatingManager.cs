@@ -24,16 +24,16 @@ namespace IceCreams.Ratings.Managers
             _cosmosDbConnectionString = configuration.GetValue<string>("CosmosDBConnection");
         }
 
-        public async Task<RatingModel> ExtractModelFromHttpRequestAsync(HttpRequest request)
+        public async Task<T> ExtractModelFromHttpRequestAsync<T>(HttpRequest request)
         {
-            RatingModel ratingModel;
+            T model;
             using StreamReader streamReader = new StreamReader(request.Body);
 
             string requestBody = await streamReader.ReadToEndAsync();
 
-            ratingModel = JsonConvert.DeserializeObject<RatingModel>(requestBody);
+            model = JsonConvert.DeserializeObject<T>(requestBody);
 
-            return ratingModel;
+            return model;
         }
 
         public async Task CreateAsync(RatingModel model)
@@ -129,6 +129,17 @@ namespace IceCreams.Ratings.Managers
                 RatingScore = rating.Rating,
                 UserNotes = rating.UserNotes
             };
+        }
+
+        public async Task SaveOrderAsync(IEnumerable<Order> orders, string key)
+        {
+            var cosmosClientProvider = new CosmosClientProvider(_cosmosDbConnectionString, "IceCreamDb", "Orders");
+            foreach (var order in orders)
+            {
+                order.id = Guid.NewGuid().ToString();
+                order.key = order.headers.salesNumber;
+                await cosmosClientProvider.InsertAsync(order, order.headers.salesNumber);
+            }
         }
     }
 }
